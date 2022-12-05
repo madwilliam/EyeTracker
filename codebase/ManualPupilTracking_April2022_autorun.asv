@@ -1,0 +1,163 @@
+
+clear allpupil
+
+load gong.mat;
+gognsound=y;
+for Trialnumber = 77:127
+%     cameraParams = load ('\\dk-server.dk.ucsd.edu\afassihizakeri\cameracalibration\cameraParamsLeftCamera.mat')
+    % Trialnumber =14
+    Main_FolderRight = '\\dk-server.dk.ucsd.edu\afassihizakeri\Leftsidemovies\ar38motor\2022_02_16\';
+    Main_FolderRight = '\\dk-server.dk.ucsd.edu\afassihizakeri\Leftsidemovies\ar30motor\2022_02_18\';
+    Main_FolderRight = '\\dk-server.dk.ucsd.edu\afassihizakeri\Leftsidemovies\ar30motor\2022_02_18\';
+    %     thisfilename = ([Main_FolderRight num2str(Trialnumber) 'EYEDLC_resnet50_Eyedata6Feb6shuffle1_300000_filtered.CSV']);
+    
+    thisfilename = ([Main_FolderRight num2str(Trialnumber) 'EYEDLC_resnet50_LeftEye_MarchMar3shuffle1_895000_filtered.CSV']);
+    
+    thisfilename2 = ([Main_FolderRight num2str(Trialnumber) 'DLC_resnet50_SideviewLeft_Feb2022Feb8shuffle2_500000_filtered.CSV']);
+    
+    
+    optsR = detectImportOptions(thisfilename);
+    optsR.VariableNames={'frames','Ex3','Ey3','El3','Ex2','Ey2','El2','Ex1','Ey1','El1','Ex4','Ey4','El4','Px1','Py1','PL1'...
+        ,'Px2','Py2','PL2','Px3','Py3','PL3','Px4','Py4','PL4','LUPx1','LUPy1','LUPl1','LDOWNx1','LDOWNy1','LDOWNL1'};
+    optsR.VariableNames={'frames','Ex1','Ey1','El1','Ex2','Ey2','El2','Ex3','Ey3','El3','Ex4','Ey4','El4' 'Px1','Py1','PL1'...
+        ,'Px2','Py2','PL2','Px3','Py3','PL3','Px4','Py4','PL4','LUPx1','LUPy1','LUPl1','LDOWNx1','LDOWNy1','LDOWNL1'};
+    TLeft = readtable(thisfilename,optsR);
+    %     TLeft2 = readtable(thisfilename);
+    
+    
+    
+    
+    optsR2 = detectImportOptions(thisfilename2);
+    optsR2.VariableNames={'frames','X1','Y1','P1','X2','Y2','P2','X3','Y3','P3'};
+    TLeftHeadandEye = readtable(thisfilename2,optsR2);
+    
+    
+    vL = VideoReader([Main_FolderRight,num2str(Trialnumber),'EYE.avi'] );
+    allT = [TLeft.Ex1,TLeft.Ey1];
+    mapxy =repmat(mean(allT(1:10,:)),size(allT,2),1);
+    DISTANCES = pdist2(mapxy,allT,'euclidean','smallest',1);
+    
+    %%
+    
+    allpupil = array2table(zeros(0,4));
+    allpupil.Properties.VariableNames = {'Centroid','MajorAxisLength', ...
+        'MinorAxisLength','Orientation'};
+    plotthis = 1;
+    txt='';
+    devider = 493;
+    Gaussianlightsourceremoval = 1.3;
+    
+     
+        Intersection=[];
+        cp=[];
+        Dy=[];
+        Intersection2=[];
+        cp2=[];
+        c=[];
+        checkparam =1;
+         sound(gognsound/2,1e4);
+
+    for ind = 1:150
+         if strcmp(txt,'p')
+            continue
+        end
+        hold off
+        
+        ImageEye = readindex(vL,double(ind));
+
+       [stats,s,D]=ExtractEYEinfo(ImageEye,ind,TLeft,plotthis,devider,xybias,Gaussianlightsourceremoval);
+             
+       if ind>3
+      pupilarea= ( pi.*(allpupil.MinorAxisLength.*allpupil.MajorAxisLength));
+      pupilarea=mean(pupilarea(end-2:end));
+      thisarea =  pi.*s.MajorAxisLength.*s.MinorAxisLength;
+       if thisarea>pupilarea*1.1||thisarea<pupilarea*0.9
+       checkparam =1;
+       sound(gognsound/2,1e4);
+       else
+       checkparam =0;
+
+       end
+       end
+       if checkparam
+       prompt = "is eye edge position correct? Y/N [Y]: ";
+        txt = input(prompt,"s");
+        if strcmp(txt,'p')
+            continue
+        end
+        if strcmp(txt,'n')
+               biasx= -3;
+        biasy= -5;
+        
+            [x, y] = ginput(1);
+            TLeft.Ex3(ind) = x+biasx;
+            TLeft.Ey3(ind) = y+biasy;
+            
+            [stats,s,D]=ExtractEYEinfo(ImageEye,ind,TLeft,plotthis,devider,xybias,Gaussianlightsourceremoval);
+        end
+        Center=stats.Centroid;
+        Centersize=stats.MajorAxisLength;
+        Center(Centersize<5,:)=0;
+        [~,maxid] = max(Center(:,2));
+        Center(maxid,:);
+        hold on
+        plot(Center(maxid,1),Center(maxid,2),'b.','Markersize',25)
+        
+        prompt = "is pupil fine: ";
+        txt = input(prompt,"s");
+        while strcmp(txt,'n')
+            
+            
+            prompt = ['devider ' num2str(devider) ' ?'];
+            txt = input(prompt,"s");
+            devider = str2num(txt);
+            prompt =  ['Gaussianlight ' num2str(Gaussianlightsourceremoval) ' ?'];
+            txt = input(prompt,"s");
+            Gaussianlightsourceremoval = str2num(txt);
+            
+            [stats,s,D]=ExtractEYEinfo(ImageEye,ind,TLeft,plotthis,devider,xybias,Gaussianlightsourceremoval);
+            prompt = "better? [n/p(to exsit) /else] ";
+            txt = input(prompt,"s");
+            if strcmp(txt,'p')
+                break
+            end
+        end
+        if strcmp(txt,'p')
+            txt = '';
+            continue
+        end
+        
+       end
+        Center=stats.Centroid;
+        Centersize=stats.MajorAxisLength;
+        Center(Centersize<5,:)=0;
+        [~,maxid] = max(Center(:,2));
+        pupilcenter(ind,:)=s.Centroid;
+        thiscenter(ind,:)=Center(maxid,:);
+        allpupil = [allpupil;struct2table(s)];
+        
+        hold on
+        biasx= -3;
+        biasy= -5;
+        
+        [Intersection(ind,:),cp(ind,:),~,Dy(ind)] =findprojectedvalues (s.Centroid,[TLeft.Ex1(ind),TLeft.Ex3(ind)]-biasx,[TLeft.Ey1(ind),TLeft.Ey3(ind)]-biasy,1);
+        [Intersection2(ind,:),cp2(ind,:),c(ind,:),~] =findprojectedvalues (Center(maxid,:),[TLeft.Ex1(ind),TLeft.Ex3(ind)]-biasx,[TLeft.Ey1(ind),TLeft.Ey3(ind)]-biasy,1);
+        hold off
+        
+        
+    end
+    Pupil.Left.intersectpupil{Trialnumber+1}=Intersection;
+    Pupil.Left.intersectlight{Trialnumber+1}=Intersection2;
+    Pupil.Left.DY{Trialnumber+1}=Dy;
+    Pupil.Left.EYEhorizontalaxis{Trialnumber+1}=c;
+    Pupil.Left.Pupil{Trialnumber+1}=allpupil;
+    Pupil.Left.pupilcenter{Trialnumber+1}=pupilcenter;
+    Pupil.Left.Light{Trialnumber+1}=thiscenter;
+    Pupil.Left.TearDuct{Trialnumber+1}=[TLeft.Ex1,TLeft.Ey1];
+    Pupil.Left.EyeBack{Trialnumber+1}=[TLeft.Ex3,TLeft.Ey3];
+    
+end
+%%
+hold off
+trial =94`
+ plot(Pupil.Left.intersectlight{trial}-Pupil.Left.intersectpupil{trial}-Pupil.Left.TearDuct{trial}(1:size(Pupil.Left.intersectpupil{trial},1),:))

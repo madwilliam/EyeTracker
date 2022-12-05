@@ -1,0 +1,251 @@
+%% for ar38 18 02 
+% good trials 16  22 25
+thiscondition= AlingedData.Trialype==1
+ColorCode = 'r';
+figure
+trial =25
+trials = find(thiscondition);
+subplot (5,1,1)
+yyaxis left
+plot(X,+AlingedData.Headangle(trials(trial),:)-90,ColorCode,'LineWidth',thislinewidth)
+ylim([-20 70])
+
+
+yyaxis right
+plot(X,rad2deg(AlingedData.Headvelocity(trials(trial),:))*400,'-.b','LineWidth',thislinewidth)
+ylim([-100 500])
+
+subplot (5,1,2)
+yyaxis left
+
+plot(X,+AlingedData.Eyemovment(trials(trial),:),ColorCode,'LineWidth',thislinewidth)
+
+ylim([-5 15])
+
+yyaxis right
+plot(X(2:end),diff(getdiffmovment(AlingedData.Eyemovment(trials(trial),:),10)*400),ColorCode,'LineWidth',thislinewidth)
+ylim([-200 500])
+
+subplot (5,1,3)
+
+plot(X,+AlingedData.LeftWhisker(trials(trial),:),ColorCode,'LineWidth',thislinewidth)
+ylim([-50 60])
+
+subplot (5,1,4)
+plot(X,+AlingedData.Rightwhisker(trials(trial),:),ColorCode,'LineWidth',thislinewidth)
+ylim([-50 75])
+
+subplot (5,1,5)
+plot(X,+AlingedData.Rightwhisker(trials(trial),:),ColorCode,'LineWidth',thislinewidth)
+
+ 
+  plot(Data.Head.Snoutx(AlingedData.Trial(trials(trial)),:),Data.Head.Snouty(AlingedData.Trial(trials(trial)),:),'-','color','b','LineWidth',thislinewidth)
+
+ hold on 
+ plot(Data.Head.Snoutx(AlingedData.Trial(trials(trial)),AlingedData.Turntime(trials(trial))),Data.Head.Snouty(AlingedData.Trial(trials(trial)),AlingedData.Turntime(trials(trial)))...
+     ,'d','color','b','Markersize',20)
+  plot(Data.Head.Snoutx(AlingedData.Trial(trials(trial)),:),Data.Head.Snouty(AlingedData.Trial(trials(trial)),:),'-','color','b','LineWidth',thislinewidth)
+                plot(Data.Spout.RX(AlingedData.Trial(trials(trial))),Data.Spout.RY(AlingedData.Trial(trials(trial))),'d','color',colorcode)
+
+
+
+
+for i=1:4
+    subplot (5,1,i)
+    xlim([-0.2 0.5])
+end
+
+
+for i=1:5
+    subplot (5,1,i)
+    
+figurecorrectionOPTO(gca,[0.01 0.01])
+
+axis normal
+end
+%%
+
+
+%% for ar38 18 02 
+% good trials 16  22 25
+X =(( 1:size(AlingedData.Headvelocity,2))-200)./400;
+
+thiscondition= AlingedData.Trialype==0
+ColorCode = 'r';
+figure
+trial =2
+trials = find(thiscondition);
+subplot (5,1,1)
+yyaxis left
+plot(X,-AlingedData.Headangle(trials(trial),:)+90,ColorCode,'LineWidth',thislinewidth)
+ylim([-20 70])
+
+
+yyaxis right
+% plot(X,rad2deg(AlingedData.Headvelocity(trials(trial),:))*400,'-','LineWidth',thislinewidth)
+plot(X(2:end),(diff(getdiffmovment(-AlingedData.Headangle(trials(trial),:)+90,20)))*400,'-','LineWidth',thislinewidth)
+
+% diff(getdiffmovment(
+ylim([-100 1000])
+
+subplot (5,1,2)
+yyaxis left
+
+plot(X,-AlingedData.Eyemovment(trials(trial),:),ColorCode,'LineWidth',thislinewidth)
+
+ylim([-20 20])
+
+yyaxis right
+plot(X(2:end),diff(getdiffmovment(-AlingedData.Eyemovment(trials(trial),:),20)*400),ColorCode,'LineWidth',thislinewidth)
+ylim([-200 500])
+
+subplot (5,1,3)
+
+A = +AlingedData.LeftWhisker(trials(trial),:);
+[F,TF] = fillmissing(A,'linear','SamplePoints',X);
+thesemissingx = smooth([0 abs(diff(F))>3],15);
+F(logical(ceil(thesemissingx)))=NaN;
+[F,TF] = fillmissing(F,'linear','SamplePoints',X);
+
+% plot(X,A,ColorCode,'LineWidth',thislinewidth)
+% hold on
+plot(X,F,ColorCode,'LineWidth',thislinewidth)
+
+ylim([-50 60])
+
+subplot (5,1,4)
+
+if AlingedData.Rightwhisker(trials(trial),201)>50
+plot(X,+AlingedData.Rightwhisker(trials(trial),:),ColorCode,'LineWidth',thislinewidth)
+else
+    plot(X,+AlingedData.Rightwhisker(trials(trial),:),'b-','LineWidth',thislinewidth)
+
+end
+ylim([-50 75])
+
+subplot (5,1,5)
+
+ 
+  plot(Data.Head.Snoutx(AlingedData.Trial(trials(trial)),:),Data.Head.Snouty(AlingedData.Trial(trials(trial)),:),'-','color','b','LineWidth',thislinewidth)
+
+ hold on 
+ plot(Data.Head.Snoutx(AlingedData.Trial(trials(trial)),AlingedData.Turntime(trials(trial))),Data.Head.Snouty(AlingedData.Trial(trials(trial)),AlingedData.Turntime(trials(trial)))...
+     ,'d','color','b','Markersize',20)
+  plot(Data.Head.Snoutx(AlingedData.Trial(trials(trial)),:),Data.Head.Snouty(AlingedData.Trial(trials(trial)),:),'-','color','b','LineWidth',thislinewidth)
+%                 plot(Data.Spout.RX(AlingedData.Trial(trials(trial))),Data.Spout.RY(AlingedData.Trial(trials(trial))),'d','color',colorcode)
+                plot(Data.Spout.LX(AlingedData.Trial(trials(trial))),Data.Spout.LY(AlingedData.Trial(trials(trial))),'d','color',colorcode)
+
+
+
+
+for i=1:4
+    subplot (5,1,i)
+    xlim([-0.2 0.8])
+end
+
+
+for i=1:5
+    subplot (5,1,i)
+    
+figurecorrectionOPTO(gca,[0.01 0.01])
+
+axis normal
+end
+%%
+
+
+%% for ar38 18 02 
+thislinewidth=1
+% good trials 16  22 25
+figure
+thesetrials = [1 2 3 6 9 10 11 18 19 20];
+for i=1:25
+thiscondition= AlingedData.Trialype==1;
+ColorCode = 'r-';
+
+trial =i;
+trials = find(thiscondition);
+subplot (5,1,1)
+if ismember(i,thesetrials)
+plot(X,+AlingedData.Headangle(trials(trial),:)-90,ColorCode,'LineWidth',thislinewidth)
+else
+    plot(X,+AlingedData.Headangle(trials(trial),:)-90,'b','LineWidth',thislinewidth)
+end
+    
+ylim([-20 70])
+
+% yyaxis right
+%  plot(X,rad2deg(AlingedData.Headvelocity(trials(trial),:))*400,'-b','LineWidth',thislinewidth)
+% ylim([-100 500])
+
+subplot (5,1,2)
+
+if ismember(i,thesetrials)
+
+plot(X,+AlingedData.Eyemovment(trials(trial),:),ColorCode,'LineWidth',thislinewidth)
+else
+  plot(X,+AlingedData.Eyemovment(trials(trial),:),'b','LineWidth',thislinewidth)
+  
+end
+ylim([-20 20])
+
+ yyaxis right
+ plot(X(2:151),diff(getdiffmovment(AlingedData.Eyemovment(trials(trial),1:400),20)*400),'b-','LineWidth',thislinewidth)
+% ylim([-200 500])
+
+subplot (5,1,3)
+if ismember(i,thesetrials)
+
+plot(X,+AlingedData.LeftWhisker(trials(trial),:),ColorCode,'LineWidth',thislinewidth)
+ylim([-50 60])
+else
+ plot(X,+AlingedData.LeftWhisker(trials(trial),:),'b','LineWidth',thislinewidth)
+   
+    
+end
+
+subplot (5,1,4)
+if AlingedData.Rightwhisker(trials(trial),240)>25
+plot(X,+AlingedData.Rightwhisker(trials(trial),:),'r','LineWidth',thislinewidth)
+% trial
+else
+    plot(X,+AlingedData.Rightwhisker(trials(trial),:),'b-','LineWidth',thislinewidth)
+end
+
+ylim([-50 75])
+
+subplot (5,1,5)
+plot(X,+AlingedData.Rightwhisker(trials(trial),:),ColorCode,'LineWidth',thislinewidth)
+
+ if ismember(i,thesetrials)
+
+  plot(Data.Head.Snoutx(AlingedData.Trial(trials(trial)),:),Data.Head.Snouty(AlingedData.Trial(trials(trial)),:),'-','color','b','LineWidth',thislinewidth)
+ else
+     
+      plot(Data.Head.Snoutx(AlingedData.Trial(trials(trial)),:),Data.Head.Snouty(AlingedData.Trial(trials(trial)),:),'-','color','r','LineWidth',thislinewidth)
+ 
+ end
+ hold on 
+ plot(Data.Head.Snoutx(AlingedData.Trial(trials(trial)),AlingedData.Turntime(trials(trial))),Data.Head.Snouty(AlingedData.Trial(trials(trial)),AlingedData.Turntime(trials(trial)))...
+     ,'d','color','b','Markersize',5)
+%   plot(Data.Head.Snoutx(AlingedData.Trial(trials(trial)),:),Data.Head.Snouty(AlingedData.Trial(trials(trial)),:),'-','color','b','LineWidth',thislinewidth)
+                plot(Data.Spout.RX(AlingedData.Trial(trials(trial))),Data.Spout.RY(AlingedData.Trial(trials(trial))),'d','color',colorcode)
+
+
+
+
+for i=1:4
+    subplot (5,1,i)
+    xlim([-0.2 0.5])
+end
+
+
+for i=1:5
+    subplot (5,1,i)
+    
+figurecorrectionOPTO(gca,[0.01 0.01])
+hold on
+
+axis normal
+end
+end
