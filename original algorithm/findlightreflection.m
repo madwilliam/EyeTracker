@@ -15,9 +15,8 @@ function [centers,reflection,radii]=findlightreflection(i,ImageEye,eye_dlc_outpu
     B = imgaussfilt(reflection_mask,GuassFilterSize);
     BW = imbinarize(B);
     newimage = uint8(BW).*ImageEye*2;
-    I = (newimage);
     % Binarize
-    Igray = rgb2gray(I);
+    Igray = rgb2gray(newimage);
     BW = imbinarize(Igray);
     % Extract the maximum area
     BW = imclearborder(BW);

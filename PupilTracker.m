@@ -147,5 +147,21 @@ classdef PupilTracker
             elipse = PupilTracker.get_elipse_from_fit_parameter(pupil.MajorAxisLength/2,pupil.MinorAxisLength/2,pupil.Centroid',pupil.Orientation);
             [~,reflection,~] = findlightreflection(framei,ImageEye,eye_dlc_output);
         end
+        function [B]=findlightreflection_mask(i,ImageEye,eye_dlc_output)
+            GuassFilterSize=6;
+            I = rgb2gray(ImageEye*2);
+            image_size = size(I);
+            reflection_mask = zeros(image_size);
+            ind = PupilTracker.get_lower_spot(eye_dlc_output,i);
+            if ~ all(isnan(ind))
+                reflection_mask(ind(1),ind(2))=1;
+            end
+            ind = PupilTracker.get_upper_spot(eye_dlc_output,i);
+            if ~ all(isnan(ind))
+                reflection_mask(ind(1),ind(2))=1;
+            end
+            B = imgaussfilt(reflection_mask,GuassFilterSize);
+            B = B>0;
+        end
    end
 end
