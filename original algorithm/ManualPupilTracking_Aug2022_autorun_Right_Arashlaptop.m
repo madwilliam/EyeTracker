@@ -52,6 +52,9 @@ for Trialnumber =[ emptyCells];
   if   new8eye==1
    optsR.VariableNames={'frames','Ex1','Ey1','El1','Ex2','Ey2','El2','Ex3','Ey3','El3','Ex4','Ey4','El4' 'Px1','Py1','PL1'...
         ,'Px2','Py2','PL2','Px3','Py3','PL3','Px4','Py4','PL4','Px5','Py5','PL5','Px6','Py6','PL6','Px7','Py7','PL7','Px8','Py8','PL8','LUPx1','LUPy1','LUPl1','LDOWNx1','LDOWNy1','LDOWNL1'};
+%EX1:EX4 eyelidscoordinates E1  and E3 are important
+
+
 %     Tright = readtable(DLC_EYEextract_name,optsR,'format','%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f');
 Tright = readtable(DLC_EYEextract_name,optsR);
 % Tright.Px7 = str2double(Tright.Px7);
@@ -224,10 +227,10 @@ Tright.PL6 = (Tright.PL2);
         
        toc 
     end
-    Pupil.Right.intersectpupil{Trialnumber+1}=Intersection;
-    Pupil.Right.intersectlight{Trialnumber+1}=Intersection2;
-    Pupil.Right.DY{Trialnumber+1}=Dy;
-    Pupil.Right.EYEhorizontalaxis{Trialnumber+1}=c;
+  %  Pupil.Right.intersectpupil{Trialnumber+1}=Intersection;
+  %  Pupil.Right.intersectlight{Trialnumber+1}=Intersection2;
+  %  Pupil.Right.DY{Trialnumber+1}=Dy;
+  %  Pupil.Right.EYEhorizontalaxis{Trialnumber+1}=c;
     Pupil.Right.Pupil{Trialnumber+1}=allpupil;
     Pupil.Right.pupilcenter{Trialnumber+1}=pupilcenter;
     Pupil.Right.Light{Trialnumber+1}=thiscenter;
