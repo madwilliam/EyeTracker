@@ -73,7 +73,7 @@ classdef PupilTracker
             rotated_ellipse = pupil.R * [ellipse_x_r;ellipse_y_r];
         end
 
-        function pupil_mask = get_pupil_mask_from_elipse(ImageEye,elipse)
+        function pupil_mask = get_pupil_mask(ImageEye,elipse)
             [xq,yq]= find(ones(size(ImageEye)));
             pupil_mask = zeros(size(ImageEye));
             in = inpolygon(xq,yq,elipse(2,:),elipse(1,:));
@@ -129,22 +129,14 @@ classdef PupilTracker
             CC = bwconncomp(BW);
             image_size = size(BW);
             center_index = sub2ind(image_size,region_center(1),region_center(2));
-            is_center_components = cellfun(@(x)  any(abs(x-center_index)<=5) ,CC.PixelIdxList);
+            is_center_components = cellfun(@(x) any(center_index==x) ,CC.PixelIdxList);
             assert(sum(is_center_components)==1)
             center_components = CC.PixelIdxList{is_center_components};
+            
+            center_components = CC.PixelIdxList{3};
             mask = zeros(size(BW));
             mask(center_components)=1;
-        end
-        
-        function mask = get_pupil_mask(ImageEye,framei,eye_dlc_output,Threshold,GuassFilterSize)
-            EYEGray = rgb2gray(ImageEye);
-            pupil_mask = EYEGray<Threshold;
-            pupil_mask = imfill(pupil_mask,'holes');
-            [X,Y] = PupilTracker.get_pupil_outline(eye_dlc_output,framei);
-            center = round(mean([X',Y']));
-            mask = PupilTracker.find_local_region(pupil_mask,center);
-            se = strel('disk',GuassFilterSize);
-            mask = imclose(mask,se);
+            imagesc(mask);
         end
 
         function [pupil,outputs] = fit_pupil_from_pupil_mask(pupil_mask)
@@ -164,7 +156,7 @@ classdef PupilTracker
         function [reflection,pupil,elipse,pupil_mask] = get_eye_info_starburst(ImageEye,eye_dlc_output,framei,threshold)
             xybias=4;
             ImageEye_grey = rgb2gray(histeq(ImageEye));
-            [mask] = get_light_reflection_mask(framei,ImageEye_grey,eye_dlc_output);
+            [mask] = get_light_reflection_mask(framei,ImageEye_grey,eye_dlc_output,xybias);
             [X_avg,Y_avg] = PupilTracker.get_pupil_center(eye_dlc_output,framei);
             pupil_center_intensity = ImageEye_grey(floor(X_avg),floor(Y_avg));
             ImageEye_grey(find(mask))=pupil_center_intensity;

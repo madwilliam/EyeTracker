@@ -1,0 +1,21 @@
+function [reflection,pupil,elipse,pupil_mask]=ExtractEYEinfo(ImageEye,framei,eye_dlc_output,Threshold,GuassFilterSize)
+    edgeThreshold = 0.05;
+    amount = 0.1;
+    EYEGray = rgb2gray(ImageEye);
+    [mask]= get_light_reflection_mask(framei,EYEGray,eye_dlc_output);
+    [X,Y] = PupilTracker.get_pupil_outline(eye_dlc_output,framei);
+    BW = poly2mask(X,Y,size(mask,1),size(mask,2));
+    inds = find(BW);
+    pupil_intensity = mean(EYEGray(inds));
+    
+    ImageEye(find(mask)) = pupil_intensity;
+    elipse = PupilTracker.get_elipse(X,Y);
+    pupil_mask = PupilTracker.get_pupil_mask(ImageEye,elipse);
+        
+    [pupil,pupil_mask] = PupilTracker.fit_pupil(ImageEye,Threshold,pupil_mask);
+    if ~isempty(pupil)
+        elipse = PupilTracker.get_elipse_from_fit_parameter(pupil.MajorAxisLength/2,pupil.MinorAxisLength/2,pupil.Centroid',pupil.Orientation);
+    else
+        elipse = [];
+    end
+end
