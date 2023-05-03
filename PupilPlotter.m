@@ -1,9 +1,15 @@
 classdef PupilPlotter
    methods(Static)
+       function pupil_plot = plot_pupil(ImageEye,pupil_plot,ax)
+           if numel(pupil_plot) ==1
+                pupil_plot = imshow(ImageEye,'Parent', ax);
+           else
+               disp()
+           end
+       end
        function plot_pupil_fit(ax,ImageEye,elipse,pupil,eye_dlc_output,framei)
             biasx= -4;
             biasy= -2;
-            imshow(ImageEye*8,'Parent', ax)
             hold(ax,'on')
             plot(ax,elipse(1,:),elipse(2,:),'r','LineWidth',2)
             plot(ax,pupil.Centroid(1),pupil.Centroid(2),'g.','Markersize',25)

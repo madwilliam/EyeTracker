@@ -128,9 +128,9 @@ classdef PupilTracker
         function mask = find_local_region(BW,region_center)
             CC = bwconncomp(BW);
             image_size = size(BW);
-            center_index = sub2ind(image_size,region_center(1),region_center(2));
-            is_center_components = cellfun(@(x)  any(abs(x-center_index)<=5) ,CC.PixelIdxList);
-            assert(sum(is_center_components)==1)
+            center_index = sub2ind(image_size,region_center(2),region_center(1));
+            distance_to_center = cellfun(@(x)  min(abs(x-center_index)) ,CC.PixelIdxList);
+            [~,is_center_components] = min(distance_to_center);
             center_components = CC.PixelIdxList{is_center_components};
             mask = zeros(size(BW));
             mask(center_components)=1;
