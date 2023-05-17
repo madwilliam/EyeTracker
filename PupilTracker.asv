@@ -1,15 +1,15 @@
 classdef PupilTracker
-   properties
-       data_path
-       files
-       names
-       dlcs
-       trial_numbers
-       eye_dlcs
-       eye_trial_numbers
-   end
+    properties
+        data_path
+        files
+        names
+        dlcs
+        trial_numbers
+        eye_dlcs
+        eye_trial_numbers
+    end
 
-   methods
+    methods
         function self = PupilTracker(data_path)
             self.data_path = data_path;
             self.files = dir(data_path);
@@ -45,8 +45,8 @@ classdef PupilTracker
                 ,'Px2','Py2','PL2','Px3','Py3','PL3','Px4','Py4','PL4','Px5','Py5','PL5','Px6','Py6','PL6','Px7','Py7','PL7','Px8','Py8','PL8','LUPx1','LUPy1','LUPl1','LDOWNx1','LDOWNy1','LDOWNL1'};
             eye_dlc_output = readtable(eye_dlc,eye_dlc_info);
         end
-   end
-   methods(Static)
+    end
+    methods(Static)
         function result  = extract_trial_number(x,pat,nskip)
             substring = extract(x,pat);
             result = str2num(substring{1}(1:end-nskip));
@@ -65,7 +65,7 @@ classdef PupilTracker
             M = makehgtform('translate',[Z', 0],'zrotate',deg2rad(-1*alpha));
             elipse = M*[col;row;zeros(1,numel(row));ones(1,numel(row))];
         end
-        
+
         function rotated_ellipse = pupil_to_elipse(pupil)
             theta_r         = linspace(0,2*pi);
             ellipse_x_r     = pupil.Centroid(1) + pupil.MajorAxisLength*cos( theta_r );
@@ -73,7 +73,7 @@ classdef PupilTracker
             rotated_ellipse = pupil.R * [ellipse_x_r;ellipse_y_r];
         end
 
-        function pupil_mask = get_pupil_mask(ImageEye,elipse)
+        function pupil_mask = get_pupil_mask_from_elipse(ImageEye,elipse)
             [xq,yq]= find(ones(size(ImageEye)));
             pupil_mask = zeros(size(ImageEye));
             in = inpolygon(xq,yq,elipse(2,:),elipse(1,:));
@@ -96,13 +96,13 @@ classdef PupilTracker
             outputFrame=readFrame(videoSource);
         end
         function lower_spot = get_lower_spot(eye_dlc_output,i)
-                xybias=4;
-                lower_spot = [floor(eye_dlc_output.LDOWNy1(i))+xybias,floor(eye_dlc_output.LDOWNx1(i))+xybias];
+            xybias=4;
+            lower_spot = [floor(eye_dlc_output.LDOWNy1(i))+xybias,floor(eye_dlc_output.LDOWNx1(i))+xybias];
         end
 
         function upper_spot = get_upper_spot(eye_dlc_output,i)
-                 xybias=4;
-                 upper_spot = [floor(eye_dlc_output.LUPy1(i))+xybias,floor(eye_dlc_output.LUPx1(i))+xybias];
+            xybias=4;
+            upper_spot = [floor(eye_dlc_output.LUPy1(i))+xybias,floor(eye_dlc_output.LUPx1(i))+xybias];
         end
 
         function [X,Y] = get_pupil_outline(eye_dlc_output,ind)
@@ -124,19 +124,34 @@ classdef PupilTracker
             pupil_mask= bwareafilt(imbinarize(imbinarize(Iblur1/Threshold,'adaptive').*imbinarize(pupil_mask)),1,'largest',4);
             [pupil,outputs] = PupilTracker.fit_pupil_from_pupil_mask(pupil_mask);
         end
-        
+
         function mask = find_local_region(BW,region_center)
             CC = bwconncomp(BW);
             image_size = size(BW);
             center_index = sub2ind(image_size,region_center(1),region_center(2));
-            is_center_components = cellfun(@(x) any(center_index==x) ,CC.PixelIdxList);
+            is_center_components = cellfun(@(x)  any(abs(x-center_index)<=5) ,CC.PixelIdxList);
+            is_center_components = cellfun(@(x)  any(abs(x-center_index)<=25) ,CC.PixelIdxList);
+
             assert(sum(is_center_components)==1)
             center_components = CC.PixelIdxList{is_center_components};
-            
-            center_components = CC.PixelIdxList{3};
             mask = zeros(size(BW));
             mask(center_components)=1;
-            imagesc(mask);
+        end
+
+        function mask = get_pupil_mask(ImageEye,framei,eye_dlc_output,Threshold,GuassFilterSize)
+            %             EYEGray = rgb2gray(histeq(ImageEye));
+            EYEGray = rgb2gray((ImageEye));
+
+            edgeThreshold = 0.5;
+            amount = 0.3;
+            EYEGray = localcontrast(EYEGray,edgeThreshold,amount);
+            pupil_mask = EYEGray<Threshold;
+            pupil_mask = imfill(pupil_mask,'holes');
+            [X,Y] = PupilTracker.get_pupil_outline(eye_dlc_output,framei);
+            center = round(mean([X',Y']));
+            mask = PupilTracker.find_local_region(pupil_mask,center);
+            se = strel('disk',GuassFilterSize);
+            mask = imclose(mask,se);
         end
 
         function [pupil,outputs] = fit_pupil_from_pupil_mask(pupil_mask)
@@ -156,7 +171,7 @@ classdef PupilTracker
         function [reflection,pupil,elipse,pupil_mask] = get_eye_info_starburst(ImageEye,eye_dlc_output,framei,threshold)
             xybias=4;
             ImageEye_grey = rgb2gray(histeq(ImageEye));
-            [mask] = get_light_reflection_mask(framei,ImageEye_grey,eye_dlc_output,xybias);
+            [mask] = get_light_reflection_mask(framei,ImageEye_grey,eye_dlc_output);
             [X_avg,Y_avg] = PupilTracker.get_pupil_center(eye_dlc_output,framei);
             pupil_center_intensity = ImageEye_grey(floor(X_avg),floor(Y_avg));
             ImageEye_grey(find(mask))=pupil_center_intensity;
@@ -184,5 +199,5 @@ classdef PupilTracker
             B = imgaussfilt(reflection_mask,GuassFilterSize);
             B = B>0;
         end
-   end
+    end
 end

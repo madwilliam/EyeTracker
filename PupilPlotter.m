@@ -1,6 +1,14 @@
 classdef PupilPlotter
    methods(Static)
+       function pupil_plot = plot_pupil(ImageEye,pupil_plot,ax)
+           if numel(pupil_plot) ==1
+                pupil_plot = imshow(ImageEye,'Parent', ax);
+           else
+               disp('something is wrong')
+           end
+       end
        function plot_pupil_fit(ax,ImageEye,elipse,pupil,eye_dlc_output,framei)
+           hold(ax,'off')
             biasx= -4;
             biasy= -2;
             imshow(ImageEye*8,'Parent', ax)
