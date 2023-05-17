@@ -124,6 +124,7 @@ classdef PupilTracker
             pupil_mask= bwareafilt(imbinarize(imbinarize(Iblur1/Threshold,'adaptive').*imbinarize(pupil_mask)),1,'largest',4);
             [pupil,outputs] = PupilTracker.fit_pupil_from_pupil_mask(pupil_mask);
         end
+<<<<<<< HEAD
 
         function mask = find_local_region(pupil_mask,center)
             %             CC = bwconncomp(BW);
@@ -148,6 +149,17 @@ classdef PupilTracker
 [~,thisminind]=min(thisdist);
             center_components = CC.PixelIdxList{thisminind};
             mask = zeros(size(pupil_mask));
+=======
+        
+        function mask = find_local_region(BW,region_center)
+            CC = bwconncomp(BW);
+            image_size = size(BW);
+            center_index = sub2ind(image_size,region_center(2),region_center(1));
+            distance_to_center = cellfun(@(x)  min(abs(x-center_index)) ,CC.PixelIdxList);
+            [~,is_center_components] = min(distance_to_center);
+            center_components = CC.PixelIdxList{is_center_components};
+            mask = zeros(size(BW));
+>>>>>>> 06de39793491254e17f6fabee205994d741386d3
             mask(center_components)=1;
         end
 
